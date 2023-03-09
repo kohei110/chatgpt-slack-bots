@@ -4,8 +4,15 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from datetime import datetime, timedelta
 from slack_sdk.errors import SlackApiError
 
+import yaml
+with open('config.yml', 'r') as f:
+    config = yaml.safe_load(f)
+    SLACK_APP_TOKEN = config['SLACK_APP_TOKEN']
+    SLACK_BOT_TOKEN = config['SLACK_BOT_TOKEN']
+
+
 # Initializes your app with your bot token and socket mode handler
-app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
+app = App(token=SLACK_BOT_TOKEN)
 
 @app.event("message")
 def message_hello(message, say):
@@ -78,4 +85,5 @@ def action_button_click(body, ack, say):
 
 # Start your app
 if __name__ == "__main__":
-    SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
+    SocketModeHandler(app, "SLACK_APP_TOKEN").start()
+
