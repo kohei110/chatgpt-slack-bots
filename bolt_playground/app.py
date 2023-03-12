@@ -12,6 +12,9 @@ with open('config.yml', 'r') as f:
     SLACK_BOT_TOKEN = config['SLACK_BOT_TOKEN']
     OPENAI_APIKEY = config['OPENAI_APIKEY']
 
+    TXT_SELECT_CH = config['TXT_SELECT_CH']
+    TXT_NOUPDATE = config['TXT_NOUPDATE']
+
 openai.api_key = OPENAI_APIKEY
 
 # Initializes your app with your bot token and socket mode handler
@@ -31,7 +34,7 @@ def message_hello(event, say, ack):
         bot_is_member_channels = [x for x in channels if x["is_member"] == True]
 
         # Create available channel list
-        li_channel_options = [{"text": {"type": "plain_text", "text": c["name"]}, "value": c["id"]} for c in bot_is_member_channels]        
+        li_channel_options = [{"text": {"type": "plain_text", "text": c["name"]}, "value": c["id"]} for c in bot_is_member_channels]
         li_channel_id = [x["value"] for x in li_channel_options]
 
         # Create approved channel list
@@ -47,7 +50,7 @@ def message_hello(event, say, ack):
             blocks=[
                 {
                     "type": "section",
-                    "text": {"type": "mrkdwn", "text": f"サマリーを読みたいチャンネルを選んでください:"},
+                    "text": {"type": "mrkdwn", "text": f"{TXT_SELECT_CH}"}, # first message from bot when you send DM
                     "accessory": {
                         "type": "static_select",
                         "placeholder": {
@@ -94,28 +97,51 @@ def select_channel(body, ack, say, client):
             print(f"Error retrieving conversation history for channel {selected_channel}: {e}")
         
         if message_texts == []:
-            summarised_txt = f'過去24時間に何もアップデートはありませんでした。'
+            summarised_txt = f'{TXT_NOUPDATE}'
         else:
             message_text_str = ""
             for item in message_texts:
                 message_text_str += f"'{item['ts']}': {item['username']} said: '{item['text']}'\n"
 
-            summariser = openai.Completion.create(
-                engine="text-davinci-002",
-                prompt=f'''こちらが{selected_channel}チャンネルの過去24時間の会話のログです。\n\n{message_text_str}\n\n
-                この会話のログを元に2つの文章を作ってください。\n\n
-                1つ目の文章は会話の要約を300字程度に会話内容を要約してください。またこの1つ目の文章を要約と呼びます。\n\n
-                その後2つ目の文章は会話からアクションアイテムが含まれる場合はそれを箇条書きで追記してください。またこの2つ目の文章をアクションアイテムと呼びます。\n\n''',
-                temperature=0.7,
-                max_tokens=300,
-                stop=None
-            )
-            # print(summariser)
-            summarised_txt = summariser["choices"][0]["text"]
+            response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    temperature=0.7,
+                    messages=[{
+                        "role":
+                        "system",
+                        "content":
+                        "\n".join([
+                            'This chat log format is one line per message in the format "Time-stamp: Speaker name: Message".',
+                            "The `\\n` within the message represents a line break."
+                            f'The user understands Japanese only.',
+                            f'So, The assistant need to speak in Japanese.',
+                            f'Do not include greeting/salutation/polite expressions in summary',
+                            f'Additionally, output must have followed format. The output must be starting from summary section, later it will be action items',
+                            f'''something like 
+                            【概要】
+                            - Summary 1
+                            - Summary 2
+                            - Summary 3
+
+                            【アクションアイテム】
+                            - Action item 1
+                            - Action item 2
+                            ''',
+                            f'please use following text input as input chat log',
+                            f'{message_text_str}',
+                            f'please make sure output text is written in Japanese'
+                        ])
+                    }]
+                    )
+
+
+
+            summarised_txt = response["choices"][0]["message"]['content']
 
         # Send a message with the conversation history
         say(
             blocks=[
+
                 {
                     "type": "section",
                     "text": {"type": "mrkdwn", "text": f"```{summarised_txt}```"}
