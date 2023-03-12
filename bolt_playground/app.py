@@ -10,6 +10,11 @@ with open('config.yml', 'r') as f:
     config = yaml.safe_load(f)
     SLACK_APP_TOKEN = config['SLACK_APP_TOKEN']
     SLACK_BOT_TOKEN = config['SLACK_BOT_TOKEN']
+
+    #debug
+    SLACK_APP_TOKEN_DEV = config['SLACK_APP_TOKEN_DEV']
+    SLACK_BOT_TOKEN_DEV = config['SLACK_BOT_TOKEN_DEV']
+
     OPENAI_APIKEY = config['OPENAI_APIKEY']
 
     TXT_SELECT_CH = config['TXT_SELECT_CH']
@@ -31,12 +36,14 @@ def message_hello(event, say, ack):
         # Get channel list
         channels_list_response = app.client.conversations_list(types="public_channel,private_channel")
         channels = channels_list_response["channels"]
-        bot_is_member_channels = [x for x in channels if x["is_member"] == True]
-
+        # bot_is_member_channels = [x for x in channels if x["is_member"] == True]
+        print(channels)
         # Create available channel list
-        li_channel_options = [{"text": {"type": "plain_text", "text": c["name"]}, "value": c["id"]} for c in bot_is_member_channels]
+        li_channel_options = [{"text": {"type": "plain_text", "text": c["name"]}, "value": c["id"]} for c in channels]
         li_channel_id = [x["value"] for x in li_channel_options]
 
+        # print(li_channel_options)
+        # print(channels_list_response)
         # Create approved channel list
         li_approved_channel_ids = [] 
         for channel_id in li_channel_id:
@@ -118,12 +125,12 @@ def select_channel(body, ack, say, client):
                             f'Do not include greeting/salutation/polite expressions in summary',
                             f'Additionally, output must have followed format. The output must be starting from summary section, later it will be action items',
                             f'''something like 
-                            【概要】
+                            【Summary】
                             - Summary 1
                             - Summary 2
                             - Summary 3
 
-                            【アクションアイテム】
+                            【Action items】
                             - Action item 1
                             - Action item 2
                             ''',

@@ -6,6 +6,7 @@ from slack_sdk.errors import SlackApiError
 import openai
 
 import yaml
+
 with open('config.yml', 'r') as f:
     config = yaml.safe_load(f)
     SLACK_APP_TOKEN = config['SLACK_APP_TOKEN']
@@ -29,8 +30,9 @@ def message_hello(event, say, ack):
     if channel_type == "im":
 
         # Get channel list
-        channels_list_response = app.client.conversations_list(types="public_channel,private_channel")
+        channels_list_response = app.client.conversations_list(limit=9999, exclude_archived = True, types="public_channel,private_channel") #(types="public_channel,private_channel")
         channels = channels_list_response["channels"]
+        # print(channels)
         bot_is_member_channels = [x for x in channels if x["is_member"] == True]
 
         # Create available channel list
