@@ -14,8 +14,8 @@ with open('config.yml', 'r') as f:
 
     TXT_SELECT_CH = config['TXT_SELECT_CH']
     TXT_NOUPDATE = config['TXT_NOUPDATE']
+    openai.api_key = OPENAI_APIKEY
 
-openai.api_key = OPENAI_APIKEY
 
 # Initializes your app with your bot token and socket mode handler
 app = App(token=SLACK_BOT_TOKEN)
