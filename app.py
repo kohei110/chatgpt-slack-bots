@@ -83,8 +83,14 @@ def select_channel(body, ack, say, client):
         # Retrieve conversation history from the selected channel
         message_texts = []
         try:
+
+            # Todo
+            # Add nested convesation log by using app.client. conversations_replies url -> https://api.slack.com/methods/conversations.replies
+
+            # top-level conversation
             history = app.client.conversations_history(channel=selected_channel, oldest=oldest)
             messages = [m for m in history["messages"] if "bot_id" not in m]
+            
             for m in messages:
                 if "user" in m and "text" in m:
                     user_id = m["user"]
@@ -97,7 +103,8 @@ def select_channel(body, ack, say, client):
                     message_texts.append({'username': username, 'text': message_text, 'ts': ts})
         except SlackApiError as e:
             print(f"Error retrieving conversation history for channel {selected_channel}: {e}")
-        
+
+
         if message_texts == []:
             summarised_txt = f'{TXT_NOUPDATE}'
         else:
@@ -113,8 +120,8 @@ def select_channel(body, ack, say, client):
                         "system",
                         "content":
                         "\n".join([
-                            'This chat log format is one line per message in the format "Time-stamp: Speaker name: Message".',
-                            "The `\\n` within the message represents a line break."
+                            f'This chat log format is one line per message in the format "Time-stamp: Speaker name: Message".',
+                            f'The `\\n` within the message represents a line break.',
                             f'The user understands Japanese only.',
                             f'So, The assistant need to speak in Japanese.',
                             f'Do not include greeting/salutation/polite expressions in summary',
@@ -124,7 +131,6 @@ def select_channel(body, ack, say, client):
                             - Summary 1
                             - Summary 2
                             - Summary 3
-
                             【アクションアイテム】
                             - Action item 1
                             - Action item 2
@@ -159,3 +165,5 @@ def select_channel(body, ack, say, client):
 # Start your app
 if __name__ == "__main__":  
     SocketModeHandler(app, SLACK_APP_TOKEN).start()
+
+
