@@ -10,6 +10,7 @@ with open('config.yml', 'r') as f:
     config = yaml.safe_load(f)
     SLACK_APP_TOKEN = config['SLACK_APP_TOKEN']
     SLACK_BOT_TOKEN = config['SLACK_BOT_TOKEN']
+
     OPENAI_APIKEY = config['OPENAI_APIKEY']
 
     TXT_SELECT_CH = config['TXT_SELECT_CH']
@@ -120,13 +121,13 @@ def select_channel(body, ack, say, client):
             for item in message_texts:
                 message_text_str += f"'{item['ts']}': {item['username']} said: '{item['text']}'\n"
 
-            print(message_text_str)
+
+            # Change prompt text based on the context
             response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     temperature=0.7,
                     messages=[{
-                        "role":
-                        "system",
+                        "role": "system",
                         "content":
                         "\n".join([
                             f'This chat log format is one line per message in the format "Time-stamp: Speaker name: Message".',
@@ -149,6 +150,8 @@ def select_channel(body, ack, say, client):
                             f'please make sure output text is written in Japanese'
                         ])
                     }]
+
+                    
                     )
 
 
@@ -174,5 +177,3 @@ def select_channel(body, ack, say, client):
 # Start your app
 if __name__ == "__main__":  
     SocketModeHandler(app, SLACK_APP_TOKEN).start()
-
-
