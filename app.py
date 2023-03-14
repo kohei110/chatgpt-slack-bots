@@ -111,22 +111,25 @@ def select_channel(body, ack, say, client):
                     ts = datetime.fromtimestamp(float(m["ts"])).strftime("%Y-%m-%d %H:%M:%S")
                     message_texts.append({'username': username, 'text': message_text, 'ts': ts})
 
-                    # nested conversation
-                    try:
-                        conversations_replies = app.client.conversations_replies(
-                            channel=selected_channel,
-                            ts=m["ts"],
-                            limit=100
-                        )
-                        for reply in conversations_replies["messages"][0]:
-                            reply_userid = reply["user"]
-                            reply_user_info = app.client.users_info(user=reply_userid)["user"]
-                            reply_username = reply_user_info["name"]
-                            reply_message_text = reply["text"]
-                            reply_ts = datetime.fromtimestamp(float(reply["ts"])).strftime("%Y-%m-%d %H:%M:%S")
-                            message_texts.append({'username': reply_username, 'text': reply_message_text, 'ts': reply_ts})
-                    except SlackApiError as e:
-                        print(f"Error retrieving conversation history for channel {selected_channel}: {e}")
+                    # # nested conversation
+                    # try:
+                    #     conversations_replies = app.client.conversations_replies(
+                    #         channel=selected_channel,
+                    #         ts=m["ts"],
+                    #         limit=1
+                    #     )
+                    #     print('test_conversations_replies')
+                    #     # print(conversations_replies)
+                    #     print(conversations_replies["messages"])
+                    #     for reply in conversations_replies["messages"]:
+                    #         reply_userid = reply["user"]
+                    #         reply_user_info = app.client.users_info(user=reply_userid)["user"]
+                    #         reply_username = reply_user_info["name"]
+                    #         reply_message_text = reply["text"]
+                    #         reply_ts = datetime.fromtimestamp(float(reply["ts"])).strftime("%Y-%m-%d %H:%M:%S")
+                    #         message_texts.append({'username': reply_username, 'text': reply_message_text, 'ts': reply_ts})
+                    # except SlackApiError as e:
+                    #     print(f"Error retrieving conversation history for channel {selected_channel}: {e}")
 
         except SlackApiError as e:
             print(f"Error retrieving conversation history for channel {selected_channel}: {e}")
