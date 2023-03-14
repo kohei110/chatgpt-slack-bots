@@ -4,7 +4,6 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 from datetime import datetime, timedelta
 from slack_sdk.errors import SlackApiError
 import openai
-import pdb
 import yaml
 
 with open('config.yml', 'r') as f:
@@ -83,18 +82,6 @@ def select_channel(body, ack, say, client):
         # Retrieve conversation history from the selected channel
         message_texts = []
         try:
-
-            # Todo
-            # Add nested convesation log by using app.client. conversations_replies url -> https://api.slack.com/methods/conversations.replies
-            # ?? https://github.com/haoling/chatgpt_slackbot/blob/7bbcb89fd325c47e82a2597f6e2228afa231aa10/bot.py
-            # conversations_replies = app.client.conversations_replies(
-            #     channel=selected_channel,
-            #     ts=thread_ts,
-            #     latest=event['ts'],
-            #     inclusive=True,
-            #     limit=10,
-            # )
-
             # top-level conversation
             
             history = app.client.conversations_history(channel=selected_channel, oldest=oldest)
@@ -106,41 +93,34 @@ def select_channel(body, ack, say, client):
                     user_info = app.client.users_info(user=user_id)["user"]
                     if user_info["deleted"] or user_info["is_bot"]:
                         continue
-                    username = user_info["name"]
-                    message_text = m["text"]
-                    ts = datetime.fromtimestamp(float(m["ts"])).strftime("%Y-%m-%d %H:%M:%S")
-                    message_texts.append({'username': username, 'text': message_text, 'ts': ts})
-
                     # # nested conversation
-                    # try:
-                    #     conversations_replies = app.client.conversations_replies(
-                    #         channel=selected_channel,
-                    #         ts=m["ts"],
-                    #         limit=1
-                    #     )
-                    #     print('test_conversations_replies')
-                    #     # print(conversations_replies)
-                    #     print(conversations_replies["messages"])
-                    #     for reply in conversations_replies["messages"]:
-                    #         reply_userid = reply["user"]
-                    #         reply_user_info = app.client.users_info(user=reply_userid)["user"]
-                    #         reply_username = reply_user_info["name"]
-                    #         reply_message_text = reply["text"]
-                    #         reply_ts = datetime.fromtimestamp(float(reply["ts"])).strftime("%Y-%m-%d %H:%M:%S")
-                    #         message_texts.append({'username': reply_username, 'text': reply_message_text, 'ts': reply_ts})
-                    # except SlackApiError as e:
-                    #     print(f"Error retrieving conversation history for channel {selected_channel}: {e}")
-
+                    try:
+                        conversations_replies = app.client.conversations_replies(
+                            channel=selected_channel,
+                            ts=m["ts"],
+                            limit=1000
+                        )
+                        for reply in conversations_replies["messages"]:
+                            reply_userid = reply["user"]
+                            reply_user_info = app.client.users_info(user=reply_userid)["user"]
+                            reply_username = reply_user_info["name"]
+                            reply_message_text = reply["text"]
+                            reply_ts = datetime.fromtimestamp(float(reply["ts"])).strftime("%Y-%m-%d %H:%M:%S")
+                            message_texts.append({'username': reply_username, 'text': reply_message_text, 'ts': reply_ts})
+                    except SlackApiError as e:
+                        print(f"Error retrieving conversation history for channel {selected_channel}: {e}")
         except SlackApiError as e:
             print(f"Error retrieving conversation history for channel {selected_channel}: {e}")
 
         if message_texts == []:
             summarised_txt = f'{TXT_NOUPDATE}'
         else:
+            message_texts = sorted(message_texts, key=lambda k: k['ts'])
             message_text_str = ""
             for item in message_texts:
                 message_text_str += f"'{item['ts']}': {item['username']} said: '{item['text']}'\n"
 
+            print(message_text_str)
             response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     temperature=0.7,
