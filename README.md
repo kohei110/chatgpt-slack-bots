@@ -5,6 +5,7 @@
 When you feel hard to catch up all of the active channels at Slack, Do you wanna get tldr or summary of the day? Yes, this is the one solution for this.
 Open ai API backed Slack bot supports summarising eligible channels for you. 
 
+![alt text](https://github.com/kohei110/main/readme.gif?raw=true)
 
 ## Summary
 This Python script is a Slack bot that summarizes the chat history of a selected channel. It uses the Slack API to retrieve the conversation history and the OpenAI API to generate a summary of the conversation history. The bot listens to direct messages and responds with a list of available channels, and once a channel is selected, it generates a summary of the conversation history in the selected channel.
