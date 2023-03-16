@@ -132,22 +132,22 @@ def select_channel(body, ack, say, client):
                         "\n".join([
                             f'This chat log format is one line per message in the format "Time-stamp: Speaker name: Message".',
                             f'The `\\n` within the message represents a line break.',
-                            f'The user understands Japanese only.',
-                            f'So, The assistant need to speak in Japanese.',
+                            f'The user understands English only.',
+                            f'So, The assistant need to speak in English.',
                             f'Do not include greeting/salutation/polite expressions in summary',
                             f'Additionally, output must have followed format. The output must be starting from summary section, later it will be action items',
                             f'''something like 
-                            【概要】
+                            【Summary】
                             - Summary 1
                             - Summary 2
                             - Summary 3
-                            【アクションアイテム】
+                            【Action Item】
                             - Action item 1
                             - Action item 2
                             ''',
                             f'please use following text input as input chat log',
                             f'{message_text_str}',
-                            f'please make sure output text is written in Japanese'
+                            f'please make sure output text is written in English'
                         ])
                     }]
 
