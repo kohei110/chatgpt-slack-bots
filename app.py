@@ -27,7 +27,7 @@ def message_hello(event, say, ack):
     user_id = event["user"]
 
     # Set conversation scope to DM only
-    if channel_type == "im":
+    if channel_type in ['public_channel','private_channel',"im"]:
 
         # Get channel list
         channels_list_response = app.client.conversations_list(limit=9999, exclude_archived = True, types="public_channel,private_channel") #(types="public_channel,private_channel")
